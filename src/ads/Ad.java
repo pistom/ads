@@ -1,6 +1,8 @@
+package ads;
+
 /**
  * Created by Tomasz Pisarek on 04/05/2016.
- * Ad in the magazin
+ * ads.Ad in the magazin
  */
 public class Ad {
     private String reference;

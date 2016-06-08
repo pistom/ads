@@ -1,29 +1,36 @@
-import java.text.DateFormat;
+package ads;
+
+import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 import java.util.ArrayList;
 
 /**
  * Created by Tomasz Pisarek on 04/05/2016.
  *
- * Edition of magazine
+ * ads.Edition of magazine
  *
  */
-public class Edition {
-    private int editionNumber;                      // Edition number
+public class Edition implements Serializable {
+    private int editionNumber;                      // ads.Edition number
     private Calendar editionDate;                   // Date of edition issue
-    private ArrayList<Ad> ads = new ArrayList<Ad>();// Edition Ads
+    private ArrayList<Ad> ads = new ArrayList<Ad>();// ads.Edition Ads
 
     /**
-     * Initialize new Edition
+     * Initialize new ads.Edition
      */
+
+    Edition(){
+        this.editionDate = Utils.guessDateOfNextDayOfWeek(Calendar.SUNDAY);
+    }
+
     Edition(int edNumber){
         this.editionNumber = edNumber;
-        this.editionDate = Utils.quessDateOfNextDayOfWeek(Calendar.SUNDAY);
+        this.editionDate = Utils.guessDateOfNextDayOfWeek(Calendar.SUNDAY);
     }
 
     Edition(int edNumber, String edDate) throws ParseException {
@@ -49,6 +56,18 @@ public class Edition {
     }
 
     /**
+     * Set the date of edition issue
+     */
+    public String getEditionDateAsString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+        return sdf.format(editionDate.getTime());
+    }
+    public LocalDate getEditionDateAsLocalDate() {
+        LocalDate ld = editionDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return ld;
+    }
+
+    /**
      * Return the number of ads
      */
     public int getAdsNumber(){
@@ -56,7 +75,7 @@ public class Edition {
     }
 
     /**
-     * Print Date of Edition
+     * Print Date of ads.Edition
      */
     public String printEditionDate(){
         Calendar edDate = editionDate;
