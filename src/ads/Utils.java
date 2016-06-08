@@ -30,8 +30,8 @@ public class Utils {
     /**
      * Create ads.Ad
      */
-    static Ad createAd(Ad.Category aCategory, String aReference, String aContent, String aContact){
-        Ad ad = new Ad(aCategory,aReference,aContent,aContact);
+    static Ad createAd(Ad.Category aCategory, String aReference, String aContent){
+        Ad ad = new Ad(aCategory,aReference,aContent);
         return ad;
     }
 }

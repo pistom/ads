@@ -29,8 +29,8 @@
             <items>
               <MenuItem mnemonicParsing="false" onAction="#newEditionMenu" text="Nowa wkładka" />
               <MenuItem mnemonicParsing="false" onAction="#openEditionMenu" text="Otwórz" />
-              <MenuItem mnemonicParsing="false" onAction="#saveEditionMenu" text="Zapisz" disable="true" fx:id="saveEditionMenu" />
-              <MenuItem mnemonicParsing="false" onAction="#saveAsEditionMenu" text="Zapisz jako" disable="true" fx:id="saveAsEditionMenu" />
+              <MenuItem fx:id="saveEditionMenu" disable="true" mnemonicParsing="false" onAction="#saveEditionMenu" text="Zapisz" />
+              <MenuItem fx:id="saveAsEditionMenu" disable="true" mnemonicParsing="false" onAction="#saveAsEditionMenu" text="Zapisz jako" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Edit">
@@ -69,15 +69,15 @@
                         <Insets left="5.0" top="5.0" />
                      </VBox.margin>
                   </Label>
-                  <ListView fx:id="adsList" disable="true" prefHeight="329.0" prefWidth="296.0">
+                  <ListView fx:id="adsList" disable="true" onMouseClicked="#showAd" prefHeight="329.0" prefWidth="296.0">
                      <VBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </VBox.margin>
                   </ListView>
                   <ButtonBar prefHeight="40.0" prefWidth="200.0">
                     <buttons>
-                        <Button fx:id="deleteAdBtn" disable="true" mnemonicParsing="false" text="Usuń" />
-                      <Button fx:id="addAdBtn" disable="true" mnemonicParsing="false" text="Dodaj" />
+                        <Button fx:id="editAdBtn" disable="true" mnemonicParsing="false" onAction="#editAd" text="Edytuj" />
+                      <Button fx:id="addAdBtn" disable="true" mnemonicParsing="false" onAction="#addAd" text="Dodaj" />
                     </buttons>
                      <padding>
                         <Insets bottom="10.0" right="5.0" />
@@ -112,11 +112,21 @@
                         <Insets top="5.0" />
                      </GridPane.margin></TextArea>
                   <TextField fx:id="adReferenceTxt" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <ButtonBar GridPane.columnIndex="1" GridPane.rowIndex="3">
-                     <buttons>
-                        <Button fx:id="saveAdBtn" disable="true" mnemonicParsing="false" text="Zapisz" textAlignment="CENTER" />
-                     </buttons>
-                  </ButtonBar>
+                  <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                     <children>
+                        <ButtonBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0">
+                          <buttons>
+                              <Button fx:id="deleteAdBtn" disable="true" mnemonicParsing="false" onAction="#deleteAd" text="Usuń" />
+                          </buttons>
+                        </ButtonBar>
+                        <ButtonBar>
+                           <buttons>
+                              <Button fx:id="cancelAdBtn" disable="true" mnemonicParsing="false" onAction="#cancelAd" text="Anuluj" />
+                              <Button fx:id="saveAdBtn" disable="true" mnemonicParsing="false" onAction="#saveAd" text="Zapisz" textAlignment="CENTER" />
+                           </buttons>
+                        </ButtonBar>
+                     </children>
+                  </HBox>
                   <FlowPane alignment="CENTER_RIGHT" GridPane.rowIndex="1">
                      <children>
                         <Label text="Referencja" />
@@ -147,10 +157,22 @@
                   <Insets left="5.0" />
                </GridPane.margin>
                <children>
-                  <FlowPane alignment="CENTER_LEFT">
+                  <FlowPane alignment="CENTER_LEFT" prefHeight="47.0" prefWidth="305.0">
                      <children>
                         <Label text="Wkładka na niedzielę:" />
-                        <Label fx:id="editionDateLabel" textFill="#777777">
+                        <Label fx:id="editionDateLabel" onMouseClicked="#setEditionDate" textFill="#777777">
+                           <FlowPane.margin>
+                              <Insets left="5.0" />
+                           </FlowPane.margin>
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label text="Numer">
+                           <FlowPane.margin>
+                              <Insets left="10.0" />
+                           </FlowPane.margin></Label>
+                        <Label fx:id="editionNumberLabel" onMouseClicked="#setEditionNumber" textFill="#777777">
                            <FlowPane.margin>
                               <Insets left="5.0" />
                            </FlowPane.margin>
@@ -161,20 +183,18 @@
                      </children>
                   </FlowPane>
                   <FlowPane alignment="CENTER_RIGHT" prefHeight="200.0" prefWidth="200.0">
-                     <children>
-                        <Label text="Numer" />
-                        <Label fx:id="editionNumberLabel" textFill="#777777">
-                           <FlowPane.margin>
-                              <Insets left="5.0" />
-                           </FlowPane.margin>
-                           <font>
-                              <Font name="System Bold" size="14.0" />
-                           </font>
-                        </Label>
-                     </children>
                      <HBox.margin>
                         <Insets right="5.0" />
                      </HBox.margin>
+                     <children>
+                        <ButtonBar prefHeight="40.0" prefWidth="326.0">
+                          <buttons>
+                            <Button fx:id="openBtn" mnemonicParsing="false" onAction="#openEditionMenu" text="Otwórz" />
+                              <Button fx:id="saveEditionBtn" disable="true" minWidth="27.0" mnemonicParsing="false" onAction="#saveEditionMenu" prefHeight="25.0" text="Zapisz" />
+                              <Button fx:id="exportXMLBtn" disable="true" mnemonicParsing="false" text="Ekportuj XML" />
+                          </buttons>
+                        </ButtonBar>
+                     </children>
                   </FlowPane>
                </children>
             </HBox>

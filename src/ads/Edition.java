@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class Edition implements Serializable {
     private int editionNumber;                      // ads.Edition number
     private Calendar editionDate;                   // Date of edition issue
-    private ArrayList<Ad> ads = new ArrayList<Ad>();// ads.Edition Ads
+    public ArrayList<Ad> ads = new ArrayList<Ad>();// ads.Edition Ads
 
     /**
      * Initialize new ads.Edition
@@ -90,6 +90,13 @@ public class Edition implements Serializable {
         ads.add(ad);
     }
 
+    /**
+     * Remove Ads
+     */
+    public void removeAd(int index) {
+        ads.remove(index);
+    }
+
     public String printAdsList(){
         return ads.toString();
     }
@@ -97,7 +104,6 @@ public class Edition implements Serializable {
     public String printAdsItem(int i){
         String aReference = ads.get(i).getReference();
         String aContent = ads.get(i).getContent();
-        String aContact = ads.get(i).getContact();
-        return aReference+": "+aContent+" - Kontakt: "+aContact;
+        return aReference+": "+aContent;
     }
 }

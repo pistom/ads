@@ -1,15 +1,16 @@
 package ads;
 
+import java.io.Serializable;
+
 /**
  * Created by Tomasz Pisarek on 04/05/2016.
  * ads.Ad in the magazin
  */
-public class Ad {
+public class Ad implements Serializable {
     private String reference;
     private String content;
-    private String contact;
     public enum Category {
-        SzukamPracy, OfertyPracy, SzukamMieszkania, WynajemMieszkania, Uslugi, Inne
+        Szukam_Pracy, Oferty_Pracy, Szukam_Mieszkania, Wynajem_Mieszkania, Usługi, Inne
     }
 
     private Category category;
@@ -17,17 +18,15 @@ public class Ad {
         setCategory(Category.Inne);
         setReference("");
         setContent("");
-        setContact("");
     }
-    Ad(Category aCategory, String aReference, String aContent, String aContact){
+    Ad(Category aCategory, String aReference, String aContent){
         setCategory(aCategory);
         setReference(aReference);
         setContent(aContent);
-        setContact(aContact);
     }
 
     public String toString(){
-        return printCategory()+": (ref. "+reference+") "+content+" - Kontakt: "+contact;
+        return printCategory()+": (ref. "+reference+") "+content;
     }
 
     public String getReference() {
@@ -44,14 +43,6 @@ public class Ad {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getContact() {
-        return contact;
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
     }
 
     public Category getCategory() {

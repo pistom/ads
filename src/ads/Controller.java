@@ -3,25 +3,15 @@ package ads;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
-import javax.swing.*;
+
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Locale;
 import java.util.Optional;
 
 
@@ -38,12 +28,24 @@ public class Controller {
     @FXML Label editionNumberLabel;
     @FXML MenuItem saveEditionMenu;
     @FXML MenuItem saveAsEditionMenu;
+    @FXML Button cancelAdBtn;
+    @FXML Button editAdBtn;
+    @FXML Button saveEditionBtn;
+    @FXML Button exportXMLBtn;
 
     Edition ed = null;
     String filePath = null;
 
-    ObservableList<String> data = FXCollections.observableArrayList();
-    final FileChooser fileChooser = new FileChooser();
+    @FXML
+    public void initialize() {
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for (Ad.Category c: Ad.Category.values()) {
+            String item = c.toString().replace("_"," ");
+            items.add(item);
+        }
+
+        this.adCategoryList.setItems(items);
+    }
 
     @FXML
     private void newEditionMenu() {
@@ -56,25 +58,34 @@ public class Controller {
 
             Optional<ButtonType> result = alert.showAndWait();
             if (result.get() == ButtonType.OK)
-                editionCreate();
-        }
+                createEdition();
+            }
         else {
-            editionCreate();
+            createEdition();
         }
     }
 
-    private void editionCreate() {
+    private void createEdition() {
+        filePath = null;
         ed = new Edition();
         clearEditionData();
+        clearAdData();
         // If values of Numer et Date of Edition are wrong reset Edition
-        if(!(setEditionNumber() && setEditionDate()))
+        if (!(setEditionNumber() && setEditionDate())) {
             ed = null;
+            disableAdsList(true);
+            disableAdDetails(true);
+            disableSaveBtns(true);
+        }
         else {
-            disableEdition(false);
-            showEditionDateAndNumber();
+            disableAdsList(false);
+            disableSaveBtns(false);
+            showEditionDate();
+            showEditionNumber();
         }
     }
 
+    @FXML
     private boolean setEditionNumber() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Ogłoszenia drobne");
@@ -86,6 +97,7 @@ public class Controller {
             try {
                 ed.setEditionNumber(Integer.parseInt(result.get()));
                 success = true;
+                showEditionNumber();
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Ogłoszenia drobne");
@@ -96,6 +108,8 @@ public class Controller {
         }
         return success;
     }
+
+    @FXML
     private boolean setEditionDate() {
         Dialog dialog = new Dialog();
         dialog.setTitle("Ogłoszenia drobne");
@@ -127,6 +141,7 @@ public class Controller {
             try {
                 ed.setEditionDate(result.get().format(DateTimeFormatter.ISO_DATE));
                 success[0] = true;
+                showEditionDate();
             } catch (Exception e) {
                 System.out.println(result);
                 Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -144,10 +159,28 @@ public class Controller {
     @FXML
     private void openEditionMenu() {
         FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(null);
-        if (selectedFile != null) {
-            filePath = selectedFile.getAbsolutePath();
-            openEdition();
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Wkładka do numeru GK","*.wkladka");
+        fileChooser.getExtensionFilters().add(filter);
+        if(ed != null) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Niezapisane dane zostaną utracone.");
+            alert.setContentText("Jeśli dokument nie został zapisany dane zostaną utracone.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.OK) {
+                File selectedFile = fileChooser.showOpenDialog(null);
+                if (selectedFile != null) {
+                    filePath = selectedFile.getAbsolutePath();
+                    openEdition();
+                }
+            }
+        } else {
+            File selectedFile = fileChooser.showOpenDialog(null);
+            if (selectedFile != null) {
+                filePath = selectedFile.getAbsolutePath();
+                openEdition();
+            }
         }
     }
 
@@ -185,7 +218,13 @@ public class Controller {
             System.exit(-1);
         }
 
-        showEditionDateAndNumber();
+
+        disableAdsList(false);
+        disableSaveBtns(false);
+        disableAdDetails(true);
+        showEditionDate();
+        showEditionNumber();
+        refreshAdsList();
     }
 
     @FXML
@@ -194,16 +233,6 @@ public class Controller {
             saveAsEditionMenu();
         else
             saveEdition();
-    }
-
-    @FXML
-    private void saveAsEditionMenu() {
-        FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showSaveDialog(null);
-        if (selectedFile != null) {
-            filePath = selectedFile.getAbsolutePath();
-            saveEdition();
-        }
     }
 
     private void saveEdition(){
@@ -244,29 +273,135 @@ public class Controller {
         }
     }
 
-    // Enable buttons and fields
-    private void disableEdition(boolean status) {
+    @FXML
+    private void saveAsEditionMenu() {
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Wkładka do numeru GK","*.wkladka");
+        fileChooser.getExtensionFilters().add(filter);
+        File selectedFile = fileChooser.showSaveDialog(null);
+        if (selectedFile != null) {
+            filePath = selectedFile.getAbsolutePath();
+            saveEdition();
+        }
+    }
+
+    // Disable/Enable save buttons
+    private void disableSaveBtns(boolean status) {
+        saveEditionMenu.setDisable(status);
+        saveAsEditionMenu.setDisable(status);
+        saveEditionBtn.setDisable(status);
+        exportXMLBtn.setDisable(status);
+    }
+    // Disable/Enable list of Ads
+    private void disableAdsList(boolean status) {
         adsList.setDisable(status);
-        deleteAdBtn.setDisable(status);
         addAdBtn.setDisable(status);
+        editAdBtn.setDisable(status);
+    }
+    // Disable/Enable Ad's details
+    private void disableAdDetails(boolean status) {
         saveAdBtn.setDisable(status);
+        deleteAdBtn.setDisable(status);
         adCategoryList.setDisable(status);
         adReferenceTxt.setDisable(status);
         adContentTxt.setDisable(status);
-        saveEditionMenu.setDisable(status);
-        saveAsEditionMenu.setDisable(status);
+        cancelAdBtn.setDisable(status);
     }
 
     // Show Edition Date and Number
-    private void showEditionDateAndNumber() {
+    private void showEditionDate() {
         editionDateLabel.setText(ed.getEditionDateAsString());
+    }
+    private void showEditionNumber() {
         editionNumberLabel.setText(String.valueOf(ed.getEditionNumber()));
     }
     // Clear all Edition Data
     private void clearEditionData() {
         editionDateLabel.setText("");
         editionNumberLabel.setText("");
+        adsList.getItems().clear();
+    }
+    private void clearAdData() {
+        adReferenceTxt.setText("");
+        adContentTxt.setText("");
+        adCategoryList.getSelectionModel().select(-1);
     }
 
+    @FXML
+    private void addAd(){
+        Ad ad = new Ad();
+        ed.addAd(ad);
+        clearAdData();
+        refreshAdsList();
+        adsList.getSelectionModel().selectLast();
+        disableAdDetails(false);
+        disableAdsList(true);
+    }
+
+    @FXML
+    private void editAd(){
+        disableAdDetails(false);
+        disableAdsList(true);
+    }
+
+
+    private void refreshAdsList(){
+        ObservableList<String> items = FXCollections.observableArrayList();
+        for(int i=0; i<ed.ads.size(); i++){
+            if(ed.ads.get(i).getReference() != "")
+                items.add(ed.ads.get(i).getReference());
+            else
+                items.add("-- wprowadź i zapisz dane --");
+        }
+        adsList.setItems(items);
+    }
+
+    @FXML
+    private void showAd(){
+        int i = adsList.getSelectionModel().getSelectedIndex();
+        if (i != -1) {
+            adReferenceTxt.setText(ed.ads.get(i).getReference());
+            adContentTxt.setText(ed.ads.get(i).getContent());
+            int categoryIndex = ed.ads.get(i).getCategory().ordinal();
+            adCategoryList.getSelectionModel().select(categoryIndex);
+        }
+    }
+
+    @FXML
+    private void saveAd(){
+        // Conversion selected item index to enum
+        int i = adsList.getSelectionModel().getSelectedIndex();
+        int categoryIndex = adCategoryList.getSelectionModel().getSelectedIndex();
+        if(categoryIndex != -1) {
+            Ad.Category category = Ad.Category.values()[categoryIndex];
+            ed.ads.get(i).setCategory(category);
+            ed.ads.get(i).setContent(adContentTxt.getText());
+            ed.ads.get(i).setReference(adReferenceTxt.getText());
+            disableAdsList(false);
+            disableAdDetails(true);
+            refreshAdsList();
+        }
+        else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Proszę uzupełnić dane formularza.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    private void deleteAd() {
+        int i = adsList.getSelectionModel().getSelectedIndex();
+        ed.ads.remove(i);
+        refreshAdsList();
+        clearAdData();
+        disableAdsList(false);
+        disableAdDetails(true);
+    }
+    @FXML
+    private void cancelAd(){
+        disableAdsList(false);
+        disableAdDetails(true);
+    }
 
 }
