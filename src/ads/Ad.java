@@ -9,6 +9,9 @@ import java.io.Serializable;
 public class Ad implements Serializable {
     private String reference;
     private String content;
+
+
+
     public enum Category {
         Szukam_Pracy, Oferty_Pracy, Szukam_Mieszkania, Wynajem_Mieszkania, Usługi, Inne
     }
@@ -26,7 +29,7 @@ public class Ad implements Serializable {
     }
 
     public String toString(){
-        return printCategory()+": (ref. "+reference+") "+content;
+        return reference+" "+content;
     }
 
     public String getReference() {
@@ -53,8 +56,30 @@ public class Ad implements Serializable {
         this.category = cat;
     }
 
-    public String printCategory() {
-        return category.toString();
+
+    public String getCategoryName(boolean abbreviation) {
+        String c = "";
+        switch (category){
+            case Szukam_Pracy:
+                c = abbreviation ? "SP" : "Szukam Pracy";
+                break;
+            case Oferty_Pracy:
+                c = abbreviation ? "OP" : "Oferty Pracy";
+                break;
+            case Szukam_Mieszkania:
+                c = abbreviation ? "SM" : "Szukam Mieszkania";
+                break;
+            case Wynajem_Mieszkania:
+                c = abbreviation ? "WM" : "Wynajem Mieszkania";
+                break;
+            case Usługi:
+                c = abbreviation ? "US" : "Usługi";
+                break;
+            case Inne:
+                c = abbreviation ? "IN" : "Inne";
+                break;
+        }
+        return c;
     }
 
 }

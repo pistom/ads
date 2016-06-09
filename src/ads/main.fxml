@@ -10,6 +10,7 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
@@ -25,22 +26,29 @@
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu mnemonicParsing="false" text="Plik">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#newEditionMenu" text="Nowa wkładka" />
               <MenuItem mnemonicParsing="false" onAction="#openEditionMenu" text="Otwórz" />
               <MenuItem fx:id="saveEditionMenu" disable="true" mnemonicParsing="false" onAction="#saveEditionMenu" text="Zapisz" />
               <MenuItem fx:id="saveAsEditionMenu" disable="true" mnemonicParsing="false" onAction="#saveAsEditionMenu" text="Zapisz jako" />
+              <SeparatorMenuItem />
+              <MenuItem fx:id="exportXMLMenu" disable="true" mnemonicParsing="false" onAction="#exportXML" text="Eksportuj XML" />
+              <MenuItem fx:id="sendToFTPMenu" disable="true" mnemonicParsing="false" onAction="#sendToFTP" text="Wyślij na FTP" />
+              <SeparatorMenuItem />
+              <MenuItem fx:id="closeProgramMenu" mnemonicParsing="false" onAction="#closeProgram" text="Zamknij" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Edit">
+          <Menu mnemonicParsing="false" text="Edycja">
             <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
+                <MenuItem fx:id="addAdMenu" disable="true" mnemonicParsing="false" onAction="#addAd" text="Dodaj ogłoszenie" />
+                <MenuItem fx:id="editAdMenu" disable="true" mnemonicParsing="false" onAction="#editAd" text="Edytu ogłoszenie" />
+                <MenuItem fx:id="deleteAdMenu" disable="true" mnemonicParsing="false" onAction="#deleteAd" text="Usuń ogłoszenie" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Help">
+          <Menu mnemonicParsing="false" text="Pomoc">
             <items>
-              <MenuItem mnemonicParsing="false" text="About" />
+              <MenuItem fx:id="aboutProgramMenu" mnemonicParsing="false" onAction="#aboutProgram" text="O programie" />
             </items>
           </Menu>
         </menus>
@@ -107,11 +115,11 @@
                      </GridPane.margin>
                   </FlowPane>
                   <ChoiceBox fx:id="adCategoryList" disable="true" prefHeight="26.0" prefWidth="321.0" GridPane.columnIndex="1" />
-                  <TextArea fx:id="adContentTxt" disable="true" prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                  <TextField fx:id="adReferenceTxt" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextArea fx:id="adContentTxt" disable="true" prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="2" wrapText="true">
                      <GridPane.margin>
                         <Insets top="5.0" />
                      </GridPane.margin></TextArea>
-                  <TextField fx:id="adReferenceTxt" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                   <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
                      <children>
                         <ButtonBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0">
@@ -191,7 +199,7 @@
                           <buttons>
                             <Button fx:id="openBtn" mnemonicParsing="false" onAction="#openEditionMenu" text="Otwórz" />
                               <Button fx:id="saveEditionBtn" disable="true" minWidth="27.0" mnemonicParsing="false" onAction="#saveEditionMenu" prefHeight="25.0" text="Zapisz" />
-                              <Button fx:id="exportXMLBtn" disable="true" mnemonicParsing="false" text="Ekportuj XML" />
+                              <Button fx:id="exportXMLBtn" disable="true" mnemonicParsing="false" onAction="#exportXML" text="Ekportuj XML" />
                           </buttons>
                         </ButtonBar>
                      </children>

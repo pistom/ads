@@ -1,5 +1,6 @@
 package ads;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -32,9 +33,15 @@ public class Controller {
     @FXML Button editAdBtn;
     @FXML Button saveEditionBtn;
     @FXML Button exportXMLBtn;
+    @FXML MenuItem addAdMenu;
+    @FXML MenuItem deleteAdMenu;
+    @FXML MenuItem editAdMenu;
+    @FXML MenuItem exportXMLMenu;
+    @FXML MenuItem sendToFTPMenu;
 
-    Edition ed = null;
-    String filePath = null;
+    private Edition ed = null;
+    private String filePath = null;
+    private String currentDirectory = null;
 
     @FXML
     public void initialize() {
@@ -76,6 +83,7 @@ public class Controller {
             disableAdsList(true);
             disableAdDetails(true);
             disableSaveBtns(true);
+            disableEditAdBtns(true);
         }
         else {
             disableAdsList(false);
@@ -147,9 +155,8 @@ public class Controller {
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Ogłoszenia drobne");
                 alert.setHeaderText("Podana wartość nie jest prawidłową datą");
-                alert.setContentText("Podczas tworzenia nowego dokumentu należy podać wartość liczbową (np. 17)");
+                alert.setContentText("Data powinna mieć format dd/mm/rrrr");
                 alert.showAndWait();
-                ed = null;
             }
         });
         return success[0];
@@ -157,7 +164,7 @@ public class Controller {
 
 
     @FXML
-    private void openEditionMenu() {
+    private void openEditionMenu() throws IOException {
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("Wkładka do numeru GK","*.wkladka");
         fileChooser.getExtensionFilters().add(filter);
@@ -172,12 +179,14 @@ public class Controller {
                 File selectedFile = fileChooser.showOpenDialog(null);
                 if (selectedFile != null) {
                     filePath = selectedFile.getAbsolutePath();
+                    currentDirectory = selectedFile.getParent();
                     openEdition();
                 }
             }
         } else {
             File selectedFile = fileChooser.showOpenDialog(null);
             if (selectedFile != null) {
+                currentDirectory = selectedFile.getParent();
                 filePath = selectedFile.getAbsolutePath();
                 openEdition();
             }
@@ -185,6 +194,7 @@ public class Controller {
     }
 
     private void openEdition(){
+        System.out.println(currentDirectory);
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         File file = new File(filePath);
@@ -281,7 +291,11 @@ public class Controller {
         File selectedFile = fileChooser.showSaveDialog(null);
         if (selectedFile != null) {
             filePath = selectedFile.getAbsolutePath();
+            currentDirectory = selectedFile.getParent();
             saveEdition();
+            exportXMLMenu.setDisable(false);
+            exportXMLBtn.setDisable(false);
+            sendToFTPMenu.setDisable(false);
         }
     }
 
@@ -290,13 +304,24 @@ public class Controller {
         saveEditionMenu.setDisable(status);
         saveAsEditionMenu.setDisable(status);
         saveEditionBtn.setDisable(status);
-        exportXMLBtn.setDisable(status);
+        if(currentDirectory != null) {
+            exportXMLMenu.setDisable(status);
+            exportXMLBtn.setDisable(status);
+            sendToFTPMenu.setDisable(status);
+        }
     }
     // Disable/Enable list of Ads
     private void disableAdsList(boolean status) {
         adsList.setDisable(status);
         addAdBtn.setDisable(status);
+        addAdMenu.setDisable(status);
+        if(adsList.getSelectionModel().getSelectedIndex() != -1){
+            disableEditAdBtns(status);
+        }
+    }
+    private void disableEditAdBtns(boolean status) {
         editAdBtn.setDisable(status);
+        editAdMenu.setDisable(status);
     }
     // Disable/Enable Ad's details
     private void disableAdDetails(boolean status) {
@@ -306,6 +331,7 @@ public class Controller {
         adReferenceTxt.setDisable(status);
         adContentTxt.setDisable(status);
         cancelAdBtn.setDisable(status);
+        deleteAdMenu.setDisable(status);
     }
 
     // Show Edition Date and Number
@@ -342,6 +368,7 @@ public class Controller {
     private void editAd(){
         disableAdDetails(false);
         disableAdsList(true);
+        disableSaveBtns(true);
     }
 
 
@@ -349,7 +376,7 @@ public class Controller {
         ObservableList<String> items = FXCollections.observableArrayList();
         for(int i=0; i<ed.ads.size(); i++){
             if(ed.ads.get(i).getReference() != "")
-                items.add(ed.ads.get(i).getReference());
+                items.add(ed.ads.get(i).getCategoryName(true)+": "+ed.ads.get(i).toString());
             else
                 items.add("-- wprowadź i zapisz dane --");
         }
@@ -364,6 +391,10 @@ public class Controller {
             adContentTxt.setText(ed.ads.get(i).getContent());
             int categoryIndex = ed.ads.get(i).getCategory().ordinal();
             adCategoryList.getSelectionModel().select(categoryIndex);
+            disableEditAdBtns(false);
+        }
+        else {
+            disableEditAdBtns(true);
         }
     }
 
@@ -379,7 +410,9 @@ public class Controller {
             ed.ads.get(i).setReference(adReferenceTxt.getText());
             disableAdsList(false);
             disableAdDetails(true);
+            disableSaveBtns(false);
             refreshAdsList();
+            adsList.getSelectionModel().select(i);
         }
         else {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -397,11 +430,64 @@ public class Controller {
         clearAdData();
         disableAdsList(false);
         disableAdDetails(true);
+        disableSaveBtns(false);
     }
     @FXML
     private void cancelAd(){
         disableAdsList(false);
         disableAdDetails(true);
+        disableSaveBtns(false);
+    }
+
+    @FXML
+    private void aboutProgram(){
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Ogłoszenia drobne");
+        alert.setHeaderText(null);
+        alert.setContentText("Program Ogłoszenia drobne.\nTomasz Pisarek");
+
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void closeProgram(){
+        if(ed != null) saveEdition();
+        Platform.exit();
+    }
+
+    @FXML
+    private void exportXML(){
+        if(Utils.generateXML(ed, currentDirectory)) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Export pliku do formatu XML");
+            alert.setContentText("Plik został prawidłowo zapisany.\n"+currentDirectory+File.separator+ed.getEditionDateAsLocalDate().toString()+".xml");
+            alert.showAndWait();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Export pliku do formatu XML");
+            alert.setContentText("Nie udało się zapisać pliku.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    private void sendToFTP() {
+        if(Utils.generateXML(ed, currentDirectory) && Utils.uploadToFTP(currentDirectory+File.separator+ed.getEditionDateAsLocalDate().toString()+".xml")) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Wysłanie pliku na serwer");
+            alert.setContentText("Plik został prawidłowo wysłany.");
+            alert.showAndWait();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Ogłoszenia drobne");
+            alert.setHeaderText("Wysłanie pliku na serwer");
+            alert.setContentText("Nie udało się wysłać pliku.");
+            alert.showAndWait();
+        }
+
     }
 
 }
