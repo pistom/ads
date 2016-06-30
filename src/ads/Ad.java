@@ -7,22 +7,22 @@ import java.io.Serializable;
  * ads.Ad in the magazin
  */
 public class Ad implements Serializable {
-    private String reference;
-    private String content;
-
-
-
     public enum Category {
         Szukam_Pracy, Oferty_Pracy, Szukam_Mieszkania, Wynajem_Mieszkania, Usługi, Inne
     }
 
+    private int id;
+    private String reference;
+    private String content;
     private Category category;
-    Ad(){
+    Ad(int aId){
+        setId(aId);
         setCategory(Category.Inne);
         setReference("");
         setContent("");
     }
-    Ad(Category aCategory, String aReference, String aContent){
+    Ad(int aId, Category aCategory, String aReference, String aContent){
+        setId(aId);
         setCategory(aCategory);
         setReference(aReference);
         setContent(aContent);
@@ -80,6 +80,13 @@ public class Ad implements Serializable {
                 break;
         }
         return c;
+    }
+
+    public int getId(){
+        return id;
+    }
+    public void setId(int aId){
+        this.id = aId;
     }
 
 }

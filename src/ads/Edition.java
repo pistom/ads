@@ -91,6 +91,18 @@ public class Edition implements Serializable {
     }
 
     /**
+     * Get last ad id
+     */
+    public int getNextId(){
+        int lastId = 0;
+        if (ads.size()==0)
+            lastId = 0;
+        else
+            lastId = ads.get(ads.size() - 1).getId()+1;
+        return lastId;
+    }
+
+    /**
      * Remove Ads
      */
     public void removeAd(int index) {

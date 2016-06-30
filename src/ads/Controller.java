@@ -3,6 +3,7 @@ package ads;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -27,6 +28,7 @@ public class Controller {
     @FXML TextArea adContentTxt;
     @FXML Label editionDateLabel;
     @FXML Label editionNumberLabel;
+    @FXML Label adId;
     @FXML MenuItem saveEditionMenu;
     @FXML MenuItem saveAsEditionMenu;
     @FXML Button cancelAdBtn;
@@ -38,10 +40,16 @@ public class Controller {
     @FXML MenuItem editAdMenu;
     @FXML MenuItem exportXMLMenu;
     @FXML MenuItem sendToFTPMenu;
+    @FXML ButtonBar clearSearchButtonBar;
+    @FXML MenuItem setEditionDateMenu;
+    @FXML MenuItem setEditionNumberMenu;
+
 
     private Edition ed = null;
     private String filePath = null;
     private String currentDirectory = null;
+    private Ad.Category filterCategory = null;
+    private String searchText = null;
 
     @FXML
     public void initialize() {
@@ -145,13 +153,13 @@ public class Controller {
         Optional<LocalDate> result = dialog.showAndWait();
 
         final boolean[] success = {false};
+
         result.ifPresent(date -> {
             try {
                 ed.setEditionDate(result.get().format(DateTimeFormatter.ISO_DATE));
                 success[0] = true;
                 showEditionDate();
             } catch (Exception e) {
-                System.out.println(result);
                 Alert alert = new Alert(Alert.AlertType.WARNING);
                 alert.setTitle("Ogłoszenia drobne");
                 alert.setHeaderText("Podana wartość nie jest prawidłową datą");
@@ -194,7 +202,6 @@ public class Controller {
     }
 
     private void openEdition(){
-        System.out.println(currentDirectory);
         FileInputStream fis = null;
         ObjectInputStream ois = null;
         File file = new File(filePath);
@@ -295,6 +302,8 @@ public class Controller {
             saveEdition();
             exportXMLMenu.setDisable(false);
             exportXMLBtn.setDisable(false);
+            setEditionDateMenu.setDisable(false);
+            setEditionNumberMenu.setDisable(false);
             sendToFTPMenu.setDisable(false);
         }
     }
@@ -308,6 +317,8 @@ public class Controller {
             exportXMLMenu.setDisable(status);
             exportXMLBtn.setDisable(status);
             sendToFTPMenu.setDisable(status);
+            setEditionDateMenu.setDisable(status);
+            setEditionNumberMenu.setDisable(status);
         }
     }
     // Disable/Enable list of Ads
@@ -323,6 +334,7 @@ public class Controller {
         editAdBtn.setDisable(status);
         editAdMenu.setDisable(status);
     }
+
     // Disable/Enable Ad's details
     private void disableAdDetails(boolean status) {
         saveAdBtn.setDisable(status);
@@ -348,6 +360,7 @@ public class Controller {
         adsList.getItems().clear();
     }
     private void clearAdData() {
+        adId.setText("");
         adReferenceTxt.setText("");
         adContentTxt.setText("");
         adCategoryList.getSelectionModel().select(-1);
@@ -355,7 +368,7 @@ public class Controller {
 
     @FXML
     private void addAd(){
-        Ad ad = new Ad();
+        Ad ad = new Ad(ed.getNextId());
         ed.addAd(ad);
         clearAdData();
         refreshAdsList();
@@ -374,22 +387,43 @@ public class Controller {
 
     private void refreshAdsList(){
         ObservableList<String> items = FXCollections.observableArrayList();
+        items.clear();
         for(int i=0; i<ed.ads.size(); i++){
-            if(ed.ads.get(i).getReference() != "")
-                items.add(ed.ads.get(i).getCategoryName(true)+": "+ed.ads.get(i).toString());
+            if(filterCategory == null)
+                if(ed.ads.get(i).getReference() != "")
+                    items.add(ed.ads.get(i).getCategoryName(true)+": "+ed.ads.get(i).toString()+" - id: "+ ed.ads.get(i).getId());
+                else
+                    items.add("--- wprowadź i zapisz dane --- "+" - id: "+ ed.ads.get(i).getId());
             else
-                items.add("-- wprowadź i zapisz dane --");
+                if(filterCategory == ed.ads.get(i).getCategory())
+                    items.add(ed.ads.get(i).getCategoryName(true)+": "+ed.ads.get(i).toString()+" - id: "+ ed.ads.get(i).getId());
+        }
+
+        if(searchText != null){
+            for(int i=items.size()-1; i>-1; i--){
+                if (items.get(i).toUpperCase().indexOf(searchText.toUpperCase()) == -1 && items.get(i).indexOf("---") == -1) {
+                    items.remove(i);
+                }
+            }
         }
         adsList.setItems(items);
     }
 
+
     @FXML
     private void showAd(){
-        int i = adsList.getSelectionModel().getSelectedIndex();
-        if (i != -1) {
-            adReferenceTxt.setText(ed.ads.get(i).getReference());
-            adContentTxt.setText(ed.ads.get(i).getContent());
-            int categoryIndex = ed.ads.get(i).getCategory().ordinal();
+        if(adsList.getSelectionModel().getSelectedIndex()!=-1){
+            String selectedAd = adsList.getSelectionModel().getSelectedItem().toString();
+            int aId = Integer.parseInt(selectedAd.substring(selectedAd.lastIndexOf(' ') + 1));
+            int index = -1;
+            for(int i=0; i<ed.ads.size(); i++){
+                if (ed.ads.get(i).getId() == aId)
+                    index = i;
+            }
+            adId.setText(Integer.toString(ed.ads.get(index).getId()));
+            adReferenceTxt.setText(ed.ads.get(index).getReference());
+            adContentTxt.setText(ed.ads.get(index).getContent());
+            int categoryIndex = ed.ads.get(index).getCategory().ordinal();
             adCategoryList.getSelectionModel().select(categoryIndex);
             disableEditAdBtns(false);
         }
@@ -401,18 +435,26 @@ public class Controller {
     @FXML
     private void saveAd(){
         // Conversion selected item index to enum
-        int i = adsList.getSelectionModel().getSelectedIndex();
+        int selectedItem = adsList.getSelectionModel().getSelectedIndex();
+        String selectedAd = adsList.getSelectionModel().getSelectedItem().toString();
+        int aId = Integer.parseInt(selectedAd.substring(selectedAd.lastIndexOf(' ') + 1));
+        int index = -1;
+        for(int i=0; i<ed.ads.size(); i++){
+            if (ed.ads.get(i).getId() == aId)
+                index = i;
+        }
+        System.out.println(aId);
         int categoryIndex = adCategoryList.getSelectionModel().getSelectedIndex();
         if(categoryIndex != -1) {
             Ad.Category category = Ad.Category.values()[categoryIndex];
-            ed.ads.get(i).setCategory(category);
-            ed.ads.get(i).setContent(adContentTxt.getText());
-            ed.ads.get(i).setReference(adReferenceTxt.getText());
+            ed.ads.get(index).setCategory(category);
+            ed.ads.get(index).setContent(adContentTxt.getText());
+            ed.ads.get(index).setReference(adReferenceTxt.getText());
             disableAdsList(false);
             disableAdDetails(true);
             disableSaveBtns(false);
             refreshAdsList();
-            adsList.getSelectionModel().select(i);
+            adsList.getSelectionModel().select(selectedItem);
         }
         else {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -424,9 +466,16 @@ public class Controller {
 
     @FXML
     private void deleteAd() {
-        int i = adsList.getSelectionModel().getSelectedIndex();
-        ed.ads.remove(i);
+        String selectedAd = adsList.getSelectionModel().getSelectedItem().toString();
+        int aId = Integer.parseInt(selectedAd.substring(selectedAd.lastIndexOf(' ') + 1));
+        int index = -1;
+        for(int i=0; i<ed.ads.size(); i++){
+            if (ed.ads.get(i).getId() == aId)
+                index = i;
+        }
+        ed.ads.remove(index);
         refreshAdsList();
+        adsList.getSelectionModel().select(-1);
         clearAdData();
         disableAdsList(false);
         disableAdDetails(true);
@@ -488,6 +537,63 @@ public class Controller {
             alert.showAndWait();
         }
 
+    }
+
+    @FXML
+    protected void filterCategory(ActionEvent e) {
+        MenuItem item = (MenuItem) e.getSource();
+        switch (item.getId()){
+            case "filterCategory0":
+                filterCategory = Ad.Category.Szukam_Pracy;
+                break;
+            case "filterCategory1":
+                filterCategory = Ad.Category.Oferty_Pracy;
+                break;
+            case "filterCategory2":
+                filterCategory = Ad.Category.Szukam_Mieszkania;
+                break;
+            case "filterCategory3":
+                filterCategory = Ad.Category.Wynajem_Mieszkania;
+                break;
+            case "filterCategory4":
+                filterCategory = Ad.Category.Usługi;
+                break;
+            case "filterCategory5":
+                filterCategory = Ad.Category.Inne;
+                break;
+        }
+        clearSearchButtonBar.setVisible(true);
+        refreshAdsList();
+        adsList.getSelectionModel().selectLast();
+        editAdBtn.setDisable(true);
+    }
+
+    @FXML
+    private void searchText() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Ogłoszenia drobne");
+        dialog.setHeaderText("Szukaj ogłoszenia");
+        dialog.setContentText("Wprowadź szukaną frazę:");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            searchText = result.get();
+            refreshAdsList();
+            clearSearchButtonBar.setVisible(true);
+            adsList.getSelectionModel().select(-1);
+            clearAdData();
+            editAdBtn.setDisable(true);
+        }
+    }
+
+    @FXML
+    private void clearSearch(){
+        clearSearchButtonBar.setVisible(false);
+        searchText = null;
+        filterCategory = null;
+        refreshAdsList();
+        adsList.getSelectionModel().select(-1);
+        clearAdData();
+        editAdBtn.setDisable(true);
     }
 
 }

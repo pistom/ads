@@ -44,8 +44,24 @@
                 <MenuItem fx:id="addAdMenu" disable="true" mnemonicParsing="false" onAction="#addAd" text="Dodaj ogłoszenie" />
                 <MenuItem fx:id="editAdMenu" disable="true" mnemonicParsing="false" onAction="#editAd" text="Edytu ogłoszenie" />
                 <MenuItem fx:id="deleteAdMenu" disable="true" mnemonicParsing="false" onAction="#deleteAd" text="Usuń ogłoszenie" />
+                <SeparatorMenuItem />
+                <MenuItem fx:id="setEditionDateMenu" disable="true" mnemonicParsing="false" onAction="#setEditionDate" text="Ustaw datę" />
+                <MenuItem fx:id="setEditionNumberMenu" disable="true" mnemonicParsing="false" onAction="#setEditionNumber" text="Ustaw numer" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Szukaj">
+                <items>
+                    <Menu mnemonicParsing="false" text="Według kategorii">
+                        <MenuItem fx:id="filterCategory0" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Szukam pracy" />
+                        <MenuItem fx:id="filterCategory1" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Oferty pracy" />
+                        <MenuItem fx:id="filterCategory2" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Szukam mieszkania" />
+                        <MenuItem fx:id="filterCategory3" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Wynajem mieszkania" />
+                        <MenuItem fx:id="filterCategory4" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Usługi" />
+                        <MenuItem fx:id="filterCategory5" disable="false" mnemonicParsing="false" onAction="#filterCategory" text="Inne" />
+                    </Menu>
+                    <MenuItem fx:id="searchTextMenu" disable="false" mnemonicParsing="false" onAction="#searchText" text="Szukaj słowa" />
+                </items>
+            </Menu>
           <Menu mnemonicParsing="false" text="Pomoc">
             <items>
               <MenuItem fx:id="aboutProgramMenu" mnemonicParsing="false" onAction="#aboutProgram" text="O programie" />
@@ -82,6 +98,14 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </VBox.margin>
                   </ListView>
+                  <ButtonBar fx:id="clearSearchButtonBar" prefHeight="40.0" prefWidth="200.0" visible="false">
+                    <buttons>
+                      <Button fx:id="clearSearchBtn" mnemonicParsing="false" onAction="#clearSearch" text="Wyczyść wyszukiwanie" />
+                    </buttons>
+                     <padding>
+                        <Insets bottom="5.0" right="5.0" />
+                     </padding>
+                  </ButtonBar>
                   <ButtonBar prefHeight="40.0" prefWidth="200.0">
                     <buttons>
                         <Button fx:id="editAdBtn" disable="true" mnemonicParsing="false" onAction="#editAd" text="Edytuj" />
@@ -100,13 +124,14 @@
                   <ColumnConstraints hgrow="SOMETIMES" maxWidth="314.0" minWidth="10.0" prefWidth="293.0" />
                </columnConstraints>
                <rowConstraints>
-                  <RowConstraints maxHeight="66.0" minHeight="6.0" prefHeight="40.0" vgrow="SOMETIMES" />
-                   <RowConstraints maxHeight="103.0" minHeight="10.0" prefHeight="38.0" vgrow="SOMETIMES" />
+                  <RowConstraints />
+                   <RowConstraints maxHeight="66.0" minHeight="6.0" prefHeight="40.0" vgrow="SOMETIMES" />
+                  <RowConstraints maxHeight="103.0" minHeight="10.0" prefHeight="38.0" vgrow="SOMETIMES" />
                   <RowConstraints maxHeight="259.0" minHeight="10.0" prefHeight="226.0" vgrow="SOMETIMES" />
                   <RowConstraints maxHeight="51.0" minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
                </rowConstraints>
                <children>
-                  <FlowPane alignment="CENTER_RIGHT">
+                  <FlowPane alignment="CENTER_RIGHT" GridPane.rowIndex="1">
                      <children>
                         <Label text="Kategoria" />
                      </children>
@@ -114,13 +139,13 @@
                         <Insets right="5.0" />
                      </GridPane.margin>
                   </FlowPane>
-                  <ChoiceBox fx:id="adCategoryList" disable="true" prefHeight="26.0" prefWidth="321.0" GridPane.columnIndex="1" />
-                  <TextField fx:id="adReferenceTxt" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <TextArea fx:id="adContentTxt" disable="true" prefWidth="300.0" GridPane.columnIndex="1" GridPane.rowIndex="2" wrapText="true">
+                  <ChoiceBox fx:id="adCategoryList" disable="true" prefHeight="26.0" prefWidth="321.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="adReferenceTxt" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextArea fx:id="adContentTxt" disable="true" prefWidth="300.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets top="5.0" />
                      </GridPane.margin></TextArea>
-                  <HBox GridPane.columnIndex="1" GridPane.rowIndex="3">
+                  <HBox GridPane.columnIndex="1" GridPane.rowIndex="4">
                      <children>
                         <ButtonBar nodeOrientation="RIGHT_TO_LEFT" prefHeight="40.0" prefWidth="200.0">
                           <buttons>
@@ -135,7 +160,7 @@
                         </ButtonBar>
                      </children>
                   </HBox>
-                  <FlowPane alignment="CENTER_RIGHT" GridPane.rowIndex="1">
+                  <FlowPane alignment="CENTER_RIGHT" GridPane.rowIndex="2">
                      <children>
                         <Label text="Referencja" />
                      </children>
@@ -143,7 +168,7 @@
                         <Insets right="5.0" />
                      </GridPane.margin>
                   </FlowPane>
-                  <FlowPane alignment="TOP_RIGHT" prefHeight="245.0" prefWidth="70.0" GridPane.rowIndex="2">
+                  <FlowPane alignment="TOP_RIGHT" prefHeight="245.0" prefWidth="70.0" GridPane.rowIndex="3">
                      <children>
                         <Label text="Treść" />
                      </children>
@@ -152,6 +177,18 @@
                      </opaqueInsets>
                      <GridPane.margin>
                         <Insets right="5.0" top="5.0" />
+                     </GridPane.margin>
+                  </FlowPane>
+                  <Label fx:id="adId" GridPane.columnIndex="1" />
+                  <FlowPane alignment="CENTER_RIGHT">
+                     <children>
+                        <Label text="Id" />
+                     </children>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <GridPane.margin>
+                        <Insets right="5.0" />
                      </GridPane.margin>
                   </FlowPane>
                </children>

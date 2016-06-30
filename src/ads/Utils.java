@@ -42,8 +42,8 @@ public class Utils {
     /**
      * Create ads.Ad
      */
-    static Ad createAd(Ad.Category aCategory, String aReference, String aContent){
-        Ad ad = new Ad(aCategory,aReference,aContent);
+    static Ad createAd(int aId, Ad.Category aCategory, String aReference, String aContent){
+        Ad ad = new Ad(aId, aCategory,aReference,aContent);
         return ad;
     }
 
